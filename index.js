@@ -1,6 +1,7 @@
 const { Console } = require("console")
 const fs = require("fs")
 const http = require('http')
+const url = require('url')
 
 //////////////////////////
 // FILES
@@ -34,7 +35,19 @@ console.log("Will print to the console before async code!")
 /////////////////////////////
 // SERVER
 const server = http.createServer((req, res) => {
-    res.end('Hello from the server!')
+    const pathName = req.url
+
+    if (pathName === '/overview' || pathName === '/') {
+        res.end('This is the OVERVIEW')
+    } else if (pathName === '/product') {
+        res.end('This is the PRODUCT')
+    } else {
+        res.writeHead(404, {
+            'Content-type': 'text/html',
+            'my-own-header': 'hello-world'
+        })
+        res.end('<h1>This page cannot be found</h1>')
+    }
 })
 
 server.listen(8000, '127.0.0.1', () => {
