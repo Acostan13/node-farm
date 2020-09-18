@@ -34,6 +34,23 @@ console.log("Will print to the console before async code!")
 
 /////////////////////////////
 // SERVER
+const replaceTemplate = (temp, product) => {
+  let ouput = temp.replace(/{%PRODUCTNAME%}/g, product.productName)
+  ouput = temp.replace(/{%IMAGE%}/g, product.image)
+  ouput = temp.replace(/{%PRICE%}/g, product.price)
+  ouput = temp.replace(/{%NUTRIENTS%}/g, product.nutrients)
+  ouput = temp.replace(/{%FROM%}/g, product.from)
+  ouput = temp.replace(/{%QUANTITY%}/g, product.quantity)
+  ouput = temp.replace(/{%DESCRIPTION%}/g, product.description)
+  ouput = temp.replace(/{%ID%}/g, product.id)
+
+  if (!product.organic) ouput = temp.replace(/{%NOT_ORGANIC%}/g, 'not-organic')
+  return output
+}
+
+const tempOverview = fs.readFileSync(`${__dirname}/templates/template-overview.html`, "utf-8")
+const tempCard = fs.readFileSync(`${__dirname}/templates/template-card.html`, "utf-8")
+const tempProduct = fs.readFileSync(`${__dirname}/templates/template-product.html`, "utf-8")
 
 const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8")
 const dataObj = JSON.parse(data)
@@ -41,13 +58,24 @@ const dataObj = JSON.parse(data)
 const server = http.createServer((req, res) => {
   const pathName = req.url
 
+  // Overview page
   if (pathName === "/overview" || pathName === "/") {
-    res.end("This is the OVERVIEW")
+    res.writeHead(200, {'Content-type': 'text/html'})
+
+    const cardsHtml = dataObj.map(el => replaceTemplate(tempCard, el))
+
+    res.end(tempOverview)
+
+  // Product page
   } else if (pathName === "/product") {
     res.end("This is the PRODUCT")
+
+  // API
   } else if (pathName === "/api") {
     res.writeHead(200, {'Content-type': 'application/json'})
     res.end(data)
+
+  // Not found
   } else {
     res.writeHead(404, {
       "Content-type": "text/html",
