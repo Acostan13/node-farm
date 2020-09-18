@@ -7,30 +7,30 @@ const url = require("url")
 // FILES
 
 // Blocking, synchronous way
-const textIn = fs.readFileSync("./txt/input.txt", "utf-8")
-console.log(textIn)
+// const textIn = fs.readFileSync("./txt/input.txt", "utf-8")
+// console.log(textIn)
 
-const textOut = `{This is what we know about the avocado: ${textIn}}.\nCreated on ${Date.now()}`
-fs.writeFileSync("./txt/output.txt", textOut)
-console.log("File written!")
+// const textOut = `{This is what we know about the avocado: ${textIn}}.\nCreated on ${Date.now()}`
+// fs.writeFileSync("./txt/output.txt", textOut)
+// console.log("File written!")
 
 // Non-blocking, asynchronous way
-fs.readFile("./txt/start.txt", "utf-8", (err, data1) => {
-  if (err) return console.log("ERROR!")
-  console.log(data1)
-  fs.readFile(`./txt/${data1}.txt`, "utf-8", (err, data2) => {
-    console.log(data2)
-    fs.readFile(`./txt/append.txt`, "utf-8", (err, data3) => {
-      console.log(data3)
-      fs.writeFile("./txt/final.txt", `${data2}\n${data3}`, "utf-8", (err) => {
-        console.log("Your file has been written :)")
-      })
-    })
-  })
-})
+// fs.readFile("./txt/start.txt", "utf-8", (err, data1) => {
+//   if (err) return console.log("ERROR!")
+//   console.log(data1)
+//   fs.readFile(`./txt/${data1}.txt`, "utf-8", (err, data2) => {
+//     console.log(data2)
+//     fs.readFile(`./txt/append.txt`, "utf-8", (err, data3) => {
+//       console.log(data3)
+//       fs.writeFile("./txt/final.txt", `${data2}\n${data3}`, "utf-8", (err) => {
+//         console.log("Your file has been written :)")
+//       })
+//     })
+//   })
+// })
 // The Triangle shape of the fs code above is a tel-tale sign of callback hell
 
-console.log("Will print to the console before async code!")
+// console.log("Will print to the console before async code!")
 
 /////////////////////////////
 // SERVER
@@ -56,10 +56,10 @@ const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, "utf-8")
 const dataObj = JSON.parse(data)
 
 const server = http.createServer((req, res) => {
-  const pathName = req.url
-
+  const {query, pathname} = url.parse(req.url, true)
+  console.log(pathname)
   // Overview page
-  if (pathName === "/overview" || pathName === "/") {
+  if (pathname === "/overview" || pathname === "/") {
     res.writeHead(200, {'Content-type': 'text/html'})
 
     const cardsHtml = dataObj.map(el => replaceTemplate(tempCard, el)).join('')
@@ -68,11 +68,17 @@ const server = http.createServer((req, res) => {
     res.end(output)
 
   // Product page
-  } else if (pathName === "/product") {
-    res.end("This is the PRODUCT")
+} else if (pathname === '/product') {
+  res.writeHead(200, {
+    'Content-type': 'text/html'
+  });
+  const product = dataObj[query.id];
+  const output = replaceTemplate(tempProduct, product);
+  res.end(output);
+
 
   // API
-  } else if (pathName === "/api") {
+  } else if (pathname === "/api") {
     res.writeHead(200, {'Content-type': 'application/json'})
     res.end(data)
 
